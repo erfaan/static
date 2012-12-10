@@ -106,6 +106,23 @@ class Cling(object):
     not_modified = StatusApp('304 Not Modified', "")
     moved_permanently = StatusApp('301 Moved Permanently')
     method_not_allowed = StatusApp('405 Method Not Allowed')
+    gzip_mime_types = ["application/atom+xml",
+        "application/javascript",
+        "application/json",
+        "application/rss+xml",
+        "application/vnd.ms-fontobject",
+        "application/x-font-ttf",
+        "application/xhtml+xml",
+        "application/xml",
+        "font/opentype",
+        "image/svg+xml",
+        "image/x-icon",
+        "text/css",
+        "text/html",
+        "text/plain",
+        "text/x-component",
+        "text/xml"
+    ]
 
     def __init__(self, root, **kw):
         """Just set the root and any other attribs passes via **kw."""
@@ -144,6 +161,10 @@ class Cling(object):
             if_none = environ.get('HTTP_IF_NONE_MATCH')
             if if_none and (if_none == '*' or etag in if_none):
                 return self.not_modified(environ, start_response, headers)
+            if self._should_gzip(full_path, environ, content_type):
+                full_path = full_path + ".gz"
+                headers.append(("Content-Encoding", "gzip"))
+                headers.append(('Vary', 'Accept-Encoding'))
             file_like = self._file_like(full_path)
             headers.append(('Content-Type', content_type))
             start_response("200 OK", headers)
@@ -184,6 +205,16 @@ class Cling(object):
         """Return an iterator over the body of the response."""
         way_to_send = environ.get('wsgi.file_wrapper', iter_and_close)
         return way_to_send(file_like, self.block_size)
+
+    def _should_gzip(self, full_path, environ, content_type):
+        """Returns whether the file should be gzipped or not"""
+        if 'gzip' not in environ.get('HTTP_ACCEPT_ENCODING', ''):
+            return False
+        if not path.exists(full_path + ".gz"):
+            return False
+        if content_type in self.gzip_mime_types:
+            return True
+        return False
 
 
 def iter_and_close(file_like, block_size):

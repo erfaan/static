@@ -17,6 +17,9 @@ Example:
 ```
 app = static.Cling('.', not_found=static.StatusApp('404 Not Found', file='./404.html'))
 ```
+* Gzip support. Automatically detects and sends if gzipped content is
+requested and available. Example: `index.html` tries to find `index.html.gz`
+in the same directory.
 
 TODO
 ====
@@ -25,12 +28,13 @@ Here are the suggested features for future:
 
 * Support for sending custom headers
 * Support for expire/cache control for static content by content type
-* Support for sending gzipped content when possible
 
 License
 =======
 
 Created and maintained by Luke Arno <luke.arno@gmail.com>
+
+Modified by Irfan Ahmad <http://i.com.pk/>
 
 Copyright (C) 2006-2009 Luke Arno - http://lukearno.com/
 
