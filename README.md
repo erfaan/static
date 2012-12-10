@@ -7,6 +7,26 @@ A really simple WSGI way to serve static (or mixed) content.
 
 See docstrings of static module for details.
 
+Changes in this fork
+====================
+
+Following features are added:
+
+* Custom mimetypes support for StatusApp. Used for html 404 errors.
+Example:
+```python
+app = static.Cling('.', not_found=static.StatusApp('404 Not Found', file='./404.html'))
+```
+
+TODO
+====
+
+Here are the suggested features for future:
+
+* Support for sending custom headers
+* Support for expire/cache control for static content by content type
+* Support for sending gzipped content when possible
+
 License
 =======
 

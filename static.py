@@ -49,22 +49,44 @@ class MagicError(Exception): pass
 
 class StatusApp:
     """Used by WSGI apps to return some HTTP status."""
-    
-    def __init__(self, status, message=None):
+
+    block_size = 16 * 4096
+
+    def __init__(self, status, message=None, file=None):
         self.status = status
+        self.file = file
         if message is None:
             self.message = status
         else:
             self.message = message
         
     def __call__(self, environ, start_response, headers=[]):
-        if self.message:
+        if self.file:
+            content_type = self._guess_type(self.file)
+            Headers(headers).add_header('Content-type', content_type)
+
+            file_like = self._file_like(self.file)
+            self.message = self._body(environ, file_like)
+        elif self.message:
             Headers(headers).add_header('Content-type', 'text/plain')
         start_response(self.status, headers)
         if environ['REQUEST_METHOD'] == 'HEAD':
             return [""]
         else:
-            return [self.message]
+            return self.message
+
+    def _file_like(self, full_path):
+        """Return the appropriate file object."""
+        return open(full_path, 'rb')
+
+    def _guess_type(self, full_path):
+        """Guess the mime type using the mimetypes module."""
+        return mimetypes.guess_type(full_path)[0] or 'text/plain'
+
+    def _body(self, environ, file_like):
+        """Return an iterator over the body of the response."""
+        way_to_send = environ.get('wsgi.file_wrapper', iter_and_close)
+        return way_to_send(file_like, self.block_size)
 
 
 class Cling(object):
