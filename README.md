@@ -14,9 +14,9 @@ Following features are added:
 
 * Custom mimetypes support for StatusApp. Used for html 404 errors.
 Example:
-```python
-app = static.Cling('.', not_found=static.StatusApp('404 Not Found', file='./404.html'))
-```
+        ```python
+        app = static.Cling('.', not_found=static.StatusApp('404 Not Found', file='./404.html'))
+        ```
 
 TODO
 ====
