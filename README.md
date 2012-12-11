@@ -12,38 +12,54 @@ Changes in this fork
 
 Following features are added:
 
-* Custom mimetypes support for StatusApp. Used for html 404 errors.
+Custom mimetypes support for StatusApp
+---------------------------------------------------------
+
+Used for html 404 errors.
+
 Example:
-```
+
+```python
 app = static.Cling('.', not_found=static.StatusApp('404 Not Found', file='./404.html'))
 ```
-* Gzip support. Automatically detects and sends if gzipped content is
+
+Gzip support
+-----------------
+
+Automatically detects and sends if gzipped content is
 requested and available. Example: `index.html` tries to find `index.html.gz`
 in the same directory.
-* Expire/Cache-Control headers support for better performance.
+
+
+Expire/Cache-Control headers support
+-----------------------------------------------------
+
+For better performance.
+
 Example:
-```
+
+```python
 EXPIRES = [
     # html
-    ('text/html', 0),
+    ('text/html', 0), # No cache
 
     # feed
-    ('application/atom+xml', 60*60),
-    ('application/rss+xml', 60*60),
+    ('application/atom+xml', 60*60), # 1 hour
+    ('application/rss+xml', 60*60), # 1 hour
 
     # favicon
-    ('image/x-icon', 7*24*60*60),
+    ('image/x-icon', 7*24*60*60), # 1 week
 
     # media
-    ('image/gif', 30*24*60*60),
-    ('image/jpeg', 30*24*60*60),
-    ('image/png', 30*24*60*60),
+    ('image/gif', 30*24*60*60), # 1 month
+    ('image/jpeg', 30*24*60*60), # 1 month
+    ('image/png', 30*24*60*60), # 1 month
 
     # CSS and Javascript
-    ('application/javascript', 365*24*60*60),
-    ('text/css', 365*24*60*60),
+    ('application/javascript', 365*24*60*60), # 1 year
+    ('text/css', 365*24*60*60), # 1 year
 ]
-app = static.Cling(STATIC_DIR, expire_headers=EXPIRES)
+app = static.Cling('.', expire_headers=EXPIRES)
 ```
 
 TODO
