@@ -26,6 +26,7 @@ Luke Arno can be found at http://lukearno.com/
 
 """
 
+import datetime
 import mimetypes
 import rfc822
 import time
@@ -123,6 +124,7 @@ class Cling(object):
         "text/x-component",
         "text/xml"
     ]
+    expire_headers = []
 
     def __init__(self, root, **kw):
         """Just set the root and any other attribs passes via **kw."""
@@ -154,6 +156,11 @@ class Cling(object):
             headers = [('Date', rfc822.formatdate(time.time())),
                        ('Last-Modified', last_modified),
                        ('ETag', etag)]
+            for mimetype, seconds in self.expire_headers:
+                if content_type == mimetype:
+                    headers.append(('Expires', datetime.datetime.utcnow() + \
+                            datetime.timedelta(seconds=seconds)))
+                    headers.append(("Cache-Control", "max-age=" + str(seconds)))
             if_modified = environ.get('HTTP_IF_MODIFIED_SINCE')
             if if_modified and (rfc822.parsedate(if_modified)
                                 >= rfc822.parsedate(last_modified)):

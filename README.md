@@ -20,6 +20,31 @@ app = static.Cling('.', not_found=static.StatusApp('404 Not Found', file='./404.
 * Gzip support. Automatically detects and sends if gzipped content is
 requested and available. Example: `index.html` tries to find `index.html.gz`
 in the same directory.
+* Expire/Cache-Control headers support for better performance.
+Example:
+```
+EXPIRES = [
+    # html
+    ('text/html', 0),
+
+    # feed
+    ('application/atom+xml', 60*60),
+    ('application/rss+xml', 60*60),
+
+    # favicon
+    ('image/x-icon', 7*24*60*60),
+
+    # media
+    ('image/gif', 30*24*60*60),
+    ('image/jpeg', 30*24*60*60),
+    ('image/png', 30*24*60*60),
+
+    # CSS and Javascript
+    ('application/javascript', 365*24*60*60),
+    ('text/css', 365*24*60*60),
+]
+app = static.Cling(STATIC_DIR, expire_headers=EXPIRES)
+```
 
 TODO
 ====
@@ -27,7 +52,6 @@ TODO
 Here are the suggested features for future:
 
 * Support for sending custom headers
-* Support for expire/cache control for static content by content type
 
 License
 =======
