@@ -62,6 +62,22 @@ EXPIRES = [
 app = static.Cling('.', expire_headers=EXPIRES)
 ```
 
+Support for setting up charset
+---------------------------------------------------------
+
+For better browser rendering performance
+
+Example:
+
+```python
+CHARSETS = [
+    ('*.html', 'UTF-8'),  # Default for html files
+    ('*.ja.html', 'SHIFT_JIS'),
+]
+
+app = static.Cling('.', charsets=CHARSETS)
+```
+
 TODO
 ====
 

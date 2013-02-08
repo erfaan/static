@@ -27,6 +27,7 @@ Luke Arno can be found at http://lukearno.com/
 """
 
 import datetime
+import fnmatch
 import mimetypes
 import rfc822
 import time
@@ -168,11 +169,17 @@ class Cling(object):
             if_none = environ.get('HTTP_IF_NONE_MATCH')
             if if_none and (if_none == '*' or etag in if_none):
                 return self.not_modified(environ, start_response, headers)
+            charset = None
+            for fnpattern, charset in self.charsets:
+                if fnmatch.fnmatch(full_path, fnpattern):
+                    charset = charset
             if self._should_gzip(full_path, environ, content_type):
                 full_path = full_path + ".gz"
                 headers.append(("Content-Encoding", "gzip"))
                 headers.append(('Vary', 'Accept-Encoding'))
             file_like = self._file_like(full_path)
+            if charset:
+                content_type = "%s; charset=%s" % (content_type, charset)
             headers.append(('Content-Type', content_type))
             start_response("200 OK", headers)
             if environ['REQUEST_METHOD'] == 'GET':
