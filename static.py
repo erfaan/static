@@ -170,9 +170,9 @@ class Cling(object):
             if if_none and (if_none == '*' or etag in if_none):
                 return self.not_modified(environ, start_response, headers)
             charset = None
-            for fnpattern, charset in self.charsets:
+            for fnpattern, _charset in self.charsets:
                 if fnmatch.fnmatch(full_path, fnpattern):
-                    charset = charset
+                    charset = _charset
             if self._should_gzip(full_path, environ, content_type):
                 full_path = full_path + ".gz"
                 headers.append(("Content-Encoding", "gzip"))
