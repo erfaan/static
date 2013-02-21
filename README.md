@@ -30,6 +30,9 @@ Automatically detects and sends if gzipped content is
 requested and available. Example: `index.html` tries to find `index.html.gz`
 in the same directory.
 
+Gzip is disbaled for Pre SP2 IE6 and IE5 browsers. Read more here: 
+http://sebduggan.com/blog/ie6-gzip-bug-solved-using-isapirewrite/
+
 
 Expire/Cache-Control headers support
 -----------------------------------------------------
@@ -102,7 +105,6 @@ TODO
 
 Here are the suggested features for future:
 
-* Support fot disabling gzip for IE6 without SP2
 * Push beyond gzipping (http://developer.yahoo.com/blogs/ydn/posts/2010/12/pushing-beyond-gzipping/)
 * Cache Busting using filename rewrites instead of query strings (http://www.stevesouders.com/blog/2008/08/23/revving-filenames-dont-use-querystring/)
 

@@ -29,6 +29,7 @@ Luke Arno can be found at http://lukearno.com/
 import datetime
 import fnmatch
 import mimetypes
+import re
 import rfc822
 import time
 import string
@@ -227,6 +228,11 @@ class Cling(object):
 
     def _should_gzip(self, full_path, environ, content_type):
         """Returns whether the file should be gzipped or not"""
+        # Do not gzip content from IE5-6 without SP2
+        # http://sebduggan.com/blog/ie6-gzip-bug-solved-using-isapirewrite/
+        user_agent = environ.get('HTTP_USER_AGENT', '')
+        if re.search("MSIE\ [56]", user_agent) and not re.search("SV1", user_agent):
+            return False
         if 'gzip' not in environ.get('HTTP_ACCEPT_ENCODING', ''):
             return False
         if not path.exists(full_path + ".gz"):
