@@ -126,6 +126,8 @@ class Cling(object):
         "text/xml"
     ]
     expire_headers = []
+    charsets = [] # No default charset
+    custom_headers = []
 
     def __init__(self, root, **kw):
         """Just set the root and any other attribs passes via **kw."""
@@ -173,14 +175,17 @@ class Cling(object):
             for fnpattern, _charset in self.charsets:
                 if fnmatch.fnmatch(full_path, fnpattern):
                     charset = _charset
+            for fnpattern, header_k, header_v in self.custom_headers:
+                if fnmatch.fnmatch(full_path, fnpattern):
+                    headers.append((header_k, header_v))
             if self._should_gzip(full_path, environ, content_type):
                 full_path = full_path + ".gz"
                 headers.append(("Content-Encoding", "gzip"))
                 headers.append(('Vary', 'Accept-Encoding'))
-            file_like = self._file_like(full_path)
             if charset:
                 content_type = "%s; charset=%s" % (content_type, charset)
             headers.append(('Content-Type', content_type))
+            file_like = self._file_like(full_path)
             start_response("200 OK", headers)
             if environ['REQUEST_METHOD'] == 'GET':
                 return self._body(full_path, environ, file_like)

@@ -34,7 +34,9 @@ in the same directory.
 Expire/Cache-Control headers support
 -----------------------------------------------------
 
-For better performance.
+For better performance. Trying to keep syntax similar to Apache's
+`ExpiresByType`. You can specify the expires headers in
+seconds against each mime type.
 
 Example:
 
@@ -44,8 +46,7 @@ EXPIRES = [
     ('text/html', 0), # No cache
 
     # feed
-    ('application/atom+xml', 60*60), # 1 hour
-    ('application/rss+xml', 60*60), # 1 hour
+    ('application/xml', 60*60), # 1 hour
 
     # favicon
     ('image/x-icon', 7*24*60*60), # 1 week
@@ -65,7 +66,9 @@ app = static.Cling('.', expire_headers=EXPIRES)
 Support for setting up charset
 ---------------------------------------------------------
 
-For better browser rendering performance
+For better browser rendering performance. Again, trying to keep
+it similar to Apache's `AddCharset`. Charset can be set for filename
+patterns (file extensions in most of the cases).
 
 Example:
 
@@ -78,12 +81,30 @@ CHARSETS = [
 app = static.Cling('.', charsets=CHARSETS)
 ```
 
+Support for custom headers
+---------------------------------------------------------
+
+Custom headers can be sent for matching file patterns. Use `*` to
+send a specific header with all files.
+
+Example:
+
+```python
+CUSTOM_HEADERS = [
+    ('*.html', "X-UA-Compatible", "IE=Edge,chrome=1"),
+]
+
+app = static.Cling('.', custom_headers=CUSTOM_HEADERS)
+```
+
 TODO
 ====
 
 Here are the suggested features for future:
 
-* Support for sending custom headers
+* Support fot disabling gzip for IE6 without SP2
+* Push beyond gzipping (http://developer.yahoo.com/blogs/ydn/posts/2010/12/pushing-beyond-gzipping/)
+* Cache Busting using filename rewrites instead of query strings (http://www.stevesouders.com/blog/2008/08/23/revving-filenames-dont-use-querystring/)
 
 License
 =======
