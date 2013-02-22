@@ -33,6 +33,9 @@ in the same directory.
 Gzip is disbaled for Pre SP2 IE6 and IE5 browsers. Read more here: 
 http://sebduggan.com/blog/ie6-gzip-bug-solved-using-isapirewrite/
 
+Pushing beyond gzipping is implemented now. Read more about it here:
+http://developer.yahoo.com/blogs/ydn/posts/2010/12/pushing-beyond-gzipping/
+
 
 Expire/Cache-Control headers support
 -----------------------------------------------------
@@ -105,7 +108,6 @@ TODO
 
 Here are the suggested features for future:
 
-* Push beyond gzipping (http://developer.yahoo.com/blogs/ydn/posts/2010/12/pushing-beyond-gzipping/)
 * Cache Busting using filename rewrites instead of query strings (http://www.stevesouders.com/blog/2008/08/23/revving-filenames-dont-use-querystring/)
 
 License

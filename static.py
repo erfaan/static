@@ -233,6 +233,16 @@ class Cling(object):
         user_agent = environ.get('HTTP_USER_AGENT', '')
         if re.search("MSIE\ [56]", user_agent) and not re.search("SV1", user_agent):
             return False
+        # Push beyond gzipping
+        # http://developer.yahoo.com/blogs/ydn/posts/2010/12/pushing-beyond-gzipping/
+        re_k = '^(HTTP_Accept_EncodXng|HTTP_X_cept_Encoding|HTTP_X{15}|HTTP_~{15}|HTTP_{16})$'
+        re_v = '^((gzip|deflate)\s*,?\s*)+|[X~-]{4,13}$'
+        have_accept_encoding = False
+        for k, v in environ.iteritems():
+            if re.match(re_k, k, flags=re.IGNORECASE) and re.match(re_v, v, flags=re.IGNORECASE):
+                have_accept_encoding = True
+        if have_accept_encoding:
+            environ['HTTP_ACCEPT_ENCODING'] = "gzip,deflate"
         if 'gzip' not in environ.get('HTTP_ACCEPT_ENCODING', ''):
             return False
         if not path.exists(full_path + ".gz"):
