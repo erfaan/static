@@ -154,11 +154,19 @@ class Cling(object):
             else:
                 full_path = self._full_path(path_info + self.index_file)
         content_type = self._guess_type(full_path)
+        headers = []
         try:
+            # Vary: Accept-Encoding should be there irrespective of
+            # we are serving gzipped content or not
+            if self._should_gzip(full_path, content_type):
+                headers.append(('Vary', 'Accept-Encoding'))
+                if self._gzip_response(full_path, environ, content_type):
+                    full_path = full_path + ".gz"
+                    headers.append(("Content-Encoding", "gzip"))
             etag, last_modified = self._conditions(full_path, environ)
-            headers = [('Date', rfc822.formatdate(time.time())),
-                       ('Last-Modified', last_modified),
-                       ('ETag', etag)]
+            headers.append(('Date', rfc822.formatdate(time.time())))
+            headers.append(('Last-Modified', last_modified))
+            headers.append(('ETag', etag))
             for mimetype, seconds in self.expire_headers:
                 if content_type == mimetype:
                     headers.append(('Expires',
@@ -173,18 +181,18 @@ class Cling(object):
                 return self.not_modified(environ, start_response, headers)
             charset = None
             for fnpattern, _charset in self.charsets:
-                if fnmatch.fnmatch(full_path, fnpattern):
+                if fnmatch.fnmatch(full_path, fnpattern) or \
+                        fnmatch.fnmatch(full_path, fnpattern + ".gz"):
                     charset = _charset
-            for fnpattern, header_k, header_v in self.custom_headers:
-                if fnmatch.fnmatch(full_path, fnpattern):
-                    headers.append((header_k, header_v))
-            if self._should_gzip(full_path, environ, content_type):
-                full_path = full_path + ".gz"
-                headers.append(("Content-Encoding", "gzip"))
-                headers.append(('Vary', 'Accept-Encoding'))
             if charset:
                 content_type = "%s; charset=%s" % (content_type, charset)
             headers.append(('Content-Type', content_type))
+
+            for fnpattern, header_k, header_v in self.custom_headers:
+                if fnmatch.fnmatch(full_path, fnpattern) or \
+                        fnmatch.fnmatch(full_path, fnpattern + ".gz"):
+                    headers.append((header_k, header_v))
+
             file_like = self._file_like(full_path)
             start_response("200 OK", headers)
             if environ['REQUEST_METHOD'] == 'GET':
@@ -225,7 +233,7 @@ class Cling(object):
         way_to_send = environ.get('wsgi.file_wrapper', iter_and_close)
         return way_to_send(file_like, self.block_size)
 
-    def _should_gzip(self, full_path, environ, content_type):
+    def _gzip_response(self, full_path, environ, content_type):
         """Returns whether the file should be gzipped or not"""
         # Do not gzip content from IE5-6 without SP2
         # http://sebduggan.com/blog/ie6-gzip-bug-solved-using-isapirewrite/
@@ -242,8 +250,11 @@ class Cling(object):
                 have_accept_encoding = True
         if have_accept_encoding:
             environ['HTTP_ACCEPT_ENCODING'] = "gzip,deflate"
-        if 'gzip' not in environ.get('HTTP_ACCEPT_ENCODING', ''):
+        if not re.search("gzip", environ.get('HTTP_ACCEPT_ENCODING', ''), flags=re.IGNORECASE):
             return False
+        return self._should_gzip(full_path, content_type)
+
+    def _should_gzip(self, full_path, content_type):
         if not path.exists(full_path + ".gz"):
             return False
         if content_type in self.gzip_mime_types:
