@@ -26,7 +26,6 @@ Luke Arno can be found at http://lukearno.com/
 
 """
 
-import datetime
 import fnmatch
 import mimetypes
 import re
@@ -162,8 +161,8 @@ class Cling(object):
                        ('ETag', etag)]
             for mimetype, seconds in self.expire_headers:
                 if content_type == mimetype:
-                    headers.append(('Expires', datetime.datetime.utcnow() + \
-                            datetime.timedelta(seconds=seconds)))
+                    headers.append(('Expires',
+                        rfc822.formatdate(time.time() + seconds)))
                     headers.append(("Cache-Control", "max-age=" + str(seconds)))
             if_modified = environ.get('HTTP_IF_MODIFIED_SINCE')
             if if_modified and (rfc822.parsedate(if_modified)
