@@ -172,13 +172,16 @@ class Cling(object):
                     headers.append(('Expires',
                         rfc822.formatdate(time.time() + seconds)))
                     headers.append(("Cache-Control", "max-age=" + str(seconds)))
+
             if_modified = environ.get('HTTP_IF_MODIFIED_SINCE')
             if if_modified and (rfc822.parsedate(if_modified)
                                 >= rfc822.parsedate(last_modified)):
                 return self.not_modified(environ, start_response, headers)
+
             if_none = environ.get('HTTP_IF_NONE_MATCH')
             if if_none and (if_none == '*' or etag in if_none):
                 return self.not_modified(environ, start_response, headers)
+
             charset = None
             for fnpattern, _charset in self.charsets:
                 if fnmatch.fnmatch(full_path, fnpattern) or \
@@ -221,8 +224,9 @@ class Cling(object):
 
     def _conditions(self, full_path, environ):
         """Return a tuple of etag, last_modified by mtime from stat."""
-        mtime = stat(full_path).st_mtime
-        return str(mtime), rfc822.formatdate(mtime)
+        filestat = stat(full_path)
+        return '"%d-%d-%d"' % (filestat.st_ino, filestat.st_size, \
+            filestat.st_mtime), rfc822.formatdate(filestat.st_mtime)
 
     def _file_like(self, full_path):
         """Return the appropriate file object."""
@@ -349,8 +353,9 @@ class Shock(Cling):
         if magic is not None:
             return magic.conditions(full_path, environ)
         else:
-            mtime = stat(full_path).st_mtime
-            return str(mtime), rfc822.formatdate(mtime)
+            filestat = stat(full_path)
+            return '"%d-%d-%d"' % (filestat.st_ino, filestat.st_size, \
+                filestat.st_mtime), rfc822.formatdate(filestat.st_mtime)
 
     def _file_like(self, full_path):
         """Return the appropriate file object."""
@@ -406,8 +411,9 @@ class BaseMagic(object):
 
     def conditions(self, full_path, environ):
         """Return Etag and Last-Modified values (based on mtime)."""
-        mtime = int(time.time())
-        return str(mtime), rfc822.formatdate(mtime)
+        filestat = stat(full_path)
+        return '"%d-%d-%d"' % (filestat.st_ino, filestat.st_size, \
+            filestat.st_mtime), rfc822.formatdate(filestat.st_mtime)
 
     def file_like(self, full_path):
         """Return a file object for path."""
